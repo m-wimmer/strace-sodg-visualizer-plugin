@@ -10,7 +10,6 @@ services:
         volumes:
             - ./import:/import
     perfetto:
-      build: .
       image: perfetto-strace-vis:latest
       container_name: perfetto
       ports: 
