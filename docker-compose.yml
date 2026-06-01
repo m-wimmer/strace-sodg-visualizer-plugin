@@ -1,0 +1,16 @@
+services:
+    neo4j:
+        image: neo4j:2026.01.4
+        container_name: neo4j
+        ports: 
+          - "7687:7687"
+          - "7474:7474"
+        environment:
+          - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD}
+        volumes:
+            - ./import:/import
+    perfetto:
+      image: perfetto-strace-vis:latest
+      container_name: perfetto
+      ports: 
+        - "10000:10000"
