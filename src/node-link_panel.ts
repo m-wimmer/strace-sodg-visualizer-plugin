@@ -20,6 +20,10 @@ enum GraphSelection{
     Detailed,
     Granular,
 }
+enum arcCalc{
+    Text,
+    Relation
+}
 
 interface Nodes_t extends d3.SimulationNodeDatum { id: number; label: string; type: string; color: string};
 interface Links_t extends d3.SimulationLinkDatum<Nodes_t> {source:number; target: number; type:string; color: string; syscall:string};
@@ -318,7 +322,6 @@ export class NodeLinkPanel implements m.ClassComponent<NodeLinkPanelAttrs> {
                .join("path")
                .attr("class","links")
                .attr("fill","none")
-               .attr("marker-end","url(#arrowhead)");
 
                const edgepaths = zoomLayer.selectAll(".edgepath")
                .data(links)
@@ -346,7 +349,11 @@ export class NodeLinkPanel implements m.ClassComponent<NodeLinkPanelAttrs> {
                .style("pointer-events", "none")
                .attr("startOffset","50%")
                .attr("fill","white")
-               .text(d => d.syscall);
+               .text(d => {
+                   if(d.source.x > d.target.x) return d= `◀-${d.syscall}-` ;
+                   return `-${d.syscall}-▶`;
+               });
+
                //  adjusted from https://observablehq.com/@xianwu/force-directed-graph-network-graph-with-arrowheads-and-lab
 
 
@@ -409,26 +416,9 @@ export class NodeLinkPanel implements m.ClassComponent<NodeLinkPanelAttrs> {
 
                    svg.call(zoomBehavior).call(zoomBehavior.transform,d3.zoomIdentity);
                }
+               
 
-               // arc path formula adjusted from https://github.com/zhanghuancs/D3.js-Node-MultiLinks-Node
-
-               function arcPath(d:any){
-                   const dx = d.target.x - d.source.x;
-                   const dy = d.target.y - d.source.y;
-                   var TotalLinksBetweenNodes = linkMap.get(d.source.id + "," + d.target.id) || linkMap.get(d.target.id + "," + d.source.id);
-                   if (TotalLinksBetweenNodes == undefined) TotalLinksBetweenNodes = 1;
-                   // arcs alternate if there is more than one link. if there is only one then a straight path is drawn
-                   if(TotalLinksBetweenNodes > 1){
-                       if(d.linkindex % 2 == 1){
-                           let dr = (Math.sqrt(dx *dx + dy*dy))/(1 + (1/(TotalLinksBetweenNodes+4)) * (d.linkindex + 1));
-                           return `M${d.source.x},${d.source.y} A${dr},${dr} 0 0,1 ${d.target.x},${d.target.y}`;
-                       }else {
-                           let dr = (Math.sqrt(dx *dx + dy*dy))/(1 + (1/(TotalLinksBetweenNodes+4)) * (d.linkindex));
-                           return `M${d.source.x},${d.source.y} A${dr},${dr} 0 0,0 ${d.target.x},${d.target.y}`;
-                       }
-                   }
-                   return `M${d.source.x},${d.source.y} A0,0 0 0,1 ${d.target.x},${d.target.y}`;
-               }
+               
                const start = performance.now();
 
                let ticks = 0;
@@ -442,8 +432,8 @@ export class NodeLinkPanel implements m.ClassComponent<NodeLinkPanelAttrs> {
                // only render graph when simulation is done 
                simulation.on("end", () => {
                    const end = performance.now();
-                   link.attr("d", arcPath);
-                   edgepaths.attr("d",arcPath);
+                   link.attr("d", (d) => this.arcPath(d,arcCalc.Relation,linkMap));
+                   edgepaths.attr("d",(d) => this.arcPath(d,arcCalc.Text,linkMap));
                    // Source - https://stackoverflow.com/a/60691259
                    // Posted by Michael Rovinsky, modified by community. See post 'Timeline' for change history
                    // Retrieved 2026-03-23, License - CC BY-SA 4.0
@@ -480,5 +470,32 @@ export class NodeLinkPanel implements m.ClassComponent<NodeLinkPanelAttrs> {
         else {return "grey";} // only for unhandled state
 
     }
+   // arc path formula adjusted from https://github.com/zhanghuancs/D3.js-Node-MultiLinks-Node
+   private arcPath(d:any,typeOfArc:arcCalc,linkMap:Map<string,number>){
+           const dx = d.target.x - d.source.x;
+           const dy = d.target.y - d.source.y;
+           var TotalLinksBetweenNodes = linkMap.get(d.source.id + "," + d.target.id) || linkMap.get(d.target.id + "," + d.source.id);
+           if (TotalLinksBetweenNodes == undefined) TotalLinksBetweenNodes = 1;
+           // arcs alternate if there is more than one link. if there is only one then a straight path is drawn
+           
+
+           if(TotalLinksBetweenNodes > 1){
+               if(d.linkindex % 2 == 1){
+                   let dr = (Math.sqrt(dx *dx + dy*dy))/(1 + (1/(TotalLinksBetweenNodes+4)) * (d.linkindex + 1));
+                   // return flipped text if necessary
+                   if (typeOfArc == arcCalc.Text && d.target.x < d.source.x) return `M${d.target.x},${d.target.y} A${dr},${dr} 0 0,1 ${d.source.x},${d.source.y}`;
+                   return `M${d.source.x},${d.source.y} A${dr},${dr} 0 0,1 ${d.target.x},${d.target.y}`;
+               }else {
+                   let dr = (Math.sqrt(dx *dx + dy*dy))/(1 + (1/(TotalLinksBetweenNodes+4)) * (d.linkindex));
+                   // return flipped text if necessary
+                   if (typeOfArc == arcCalc.Text && d.target.x < d.source.x) return `M${d.target.x},${d.target.y} A${dr},${dr} 0 0,0 ${d.source.x},${d.source.y}`;
+                   return `M${d.source.x},${d.source.y} A${dr},${dr} 0 0,0 ${d.target.x},${d.target.y}`;
+               }
+           }
+           // return flipped text if necessary
+           if (typeOfArc == arcCalc.Text && d.target.x < d.source.x) return `M${d.target.x},${d.target.y} A0,0 0 0,1 ${d.source.x},${d.source.y}`;
+           return `M${d.source.x},${d.source.y} A0,0 0 0,1 ${d.target.x},${d.target.y}`;
+       }
 
 }
+
