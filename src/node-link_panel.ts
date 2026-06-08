@@ -316,7 +316,7 @@ export class NodeLinkPanel implements m.ClassComponent<NodeLinkPanelAttrs> {
 
                // multlink setup adjusted https://github.com/zhanghuancs/D3.js-Node-MultiLinks-Node
 
-               //  link labels adjusted from https://observablehq.com/@xianwu/force-directed-graph-network-graph-with-arrowheads-and-lab
+               //  link labels adjusted from https://observablehq.com/@xianwu/force-directed-graph-network-graph-with-arrowheads-and-lab to our use case
                const link = zoomLayer.selectAll(".links")
                .data(links)
                .join("path")
@@ -354,9 +354,6 @@ export class NodeLinkPanel implements m.ClassComponent<NodeLinkPanelAttrs> {
                    return `-${d.syscall}-▶`;
                });
 
-               //  adjusted from https://observablehq.com/@xianwu/force-directed-graph-network-graph-with-arrowheads-and-lab
-
-
                const node = zoomLayer.append("g")
                .attr("stroke-linecap", graphConfig.nodeStrokeLinecap)
                .attr("stroke-linejoin", graphConfig.nodeStrokeLinejoin)
@@ -379,7 +376,7 @@ export class NodeLinkPanel implements m.ClassComponent<NodeLinkPanelAttrs> {
                .text(d => d.label)
                .style("fill", graphConfig.nodeTitleFill);
 
-               // https://observablehq.com/@john-guerra/force-directed-graph-with-link-highlighting
+               // adapted from https://observablehq.com/@john-guerra/force-directed-graph-with-link-highlighting
                node.on("mouseenter", (_evt:any, d:any) => {
                    edgepaths 
                    .attr("display", "none")
@@ -470,7 +467,7 @@ export class NodeLinkPanel implements m.ClassComponent<NodeLinkPanelAttrs> {
         else {return "grey";} // only for unhandled state
 
     }
-   // arc path formula adjusted from https://github.com/zhanghuancs/D3.js-Node-MultiLinks-Node
+   // arc path formula based from https://github.com/zhanghuancs/D3.js-Node-MultiLinks-Node
    private arcPath(d:any,typeOfArc:arcCalc,linkMap:Map<string,number>){
            const dx = d.target.x - d.source.x;
            const dy = d.target.y - d.source.y;
