@@ -342,17 +342,12 @@ export class NodeLinkPanel implements m.ClassComponent<NodeLinkPanelAttrs> {
                .attr("id", function(_d,i){return 'edgelabel'+i})
                .attr("font-size",graphConfig.linkLabelFontSize);
 
-
-               edgelabels.append('textPath')
+               const edgelabels_text = edgelabels.append('textPath')
                .attr('xlink:href', function (_d, i) {return '#edgepath' + i})
                .style("text-anchor","middle")
                .style("pointer-events", "none")
                .attr("startOffset","50%")
-               .attr("fill","white")
-               .text(d => {
-                   if(d.source.x > d.target.x) return d= `◀-${d.syscall}-` ;
-                   return `-${d.syscall}-▶`;
-               });
+               .attr("fill","white");
 
                const node = zoomLayer.append("g")
                .attr("stroke-linecap", graphConfig.nodeStrokeLinecap)
@@ -431,6 +426,10 @@ export class NodeLinkPanel implements m.ClassComponent<NodeLinkPanelAttrs> {
                    const end = performance.now();
                    link.attr("d", (d) => this.arcPath(d,arcCalc.Relation,linkMap));
                    edgepaths.attr("d",(d) => this.arcPath(d,arcCalc.Text,linkMap));
+                   edgelabels_text.text(d => {
+                   if(d.source.x > d.target.x) return `◀-${d.syscall}-` ;
+                   return `-${d.syscall}-▶`;
+               });
                    // Source - https://stackoverflow.com/a/60691259
                    // Posted by Michael Rovinsky, modified by community. See post 'Timeline' for change history
                    // Retrieved 2026-03-23, License - CC BY-SA 4.0
