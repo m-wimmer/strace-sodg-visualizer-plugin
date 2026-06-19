@@ -1,0 +1,27 @@
+services:
+    neo4j_1:
+        image: neo4j:2026.01.4
+        container_name: neo4j_1
+        ports:
+          - "7687:7687"
+          - "7474:7474"
+        environment:
+          - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD}
+        volumes:
+            - ./import/DATA:/import
+    neo4j_2:
+        image: neo4j:2026.01.4
+        container_name: neo4j_2
+        ports:
+          - "7688:7687"
+          - "7475:7474"
+        environment:
+          - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD}
+        volumes:
+            - ./import/DATA:/import
+    perfetto:
+      #image: perfetto-strace-vis:latest
+      image: perfetto-strace-vis-ip-csp:latest
+      container_name: perfetto
+      ports:
+        - "10000:10000"

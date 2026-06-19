@@ -1,0 +1,1 @@
+This compose is for comparing two graphs from different with each other. There are surely other alternative solutions to fix this, but having to seperate db instances works. Make sure to change the connection string on one perfetto UI tab accordingly to the other db.
